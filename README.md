@@ -6,6 +6,10 @@ This repository contains the code for my CP-net learning method (and associated 
 
 This CP-net learning method takes a set of observed user choices and learns a conditional preference network (CP-net) model representation of user preference. Note that, in its current form we can only use this method on problems with binary variables.
 
+Due to limitations in computational precision and storage, learning cannot be used on problems with much more than 10 variables. Please see the thesis Chapter 4 and relevant appendices for full details of these limitations.
+
+The CP-nets generated for our learning experiments were created using the generator given in the DQ-Pruning repository. The p_i values and data were then generated from these structures, as explained in the thesis, Chapter 4, section 4.4. 
+
 The C++ files contain the necessary functions to perform learning and to test the outputs of our learning. The numbering of these files indicates the hieirarchy of the code. That is, file 20 can be dependent upon functions from file 10 but not vice versa.
 
 CompilingInstructions.txt gives the necessary commands to compile these scripts. Note that the gsl library is required.
@@ -165,10 +169,6 @@ Any vector where each entry corresponds to an outcome is assumed to be in order 
 
 **CP-nets** We defined a new structure in C++ to handle CP-nets (called cpn, defined in the cpnInput.h file). This is used (except in the case of 35_DominanceTesting.cpp) throughout to handle CP-nets in our functions. This C++ structure is based on the same CP-net encoding we used in the Rcpp code in the CPPDomTestingAndPreprocessing repository. It stores an integer giving the number of variables. The structure (formatted as described above). And three integer vectors, domain, entries, and breaks. Domain gives the size of the domains for each variable. Entries is defined in the same way as in the CPPDomTestingAndPreprocessing repository. As is breaks, however here each entru is 1 less than the Rcpp version (to comply with c++ indexing rather than R indexing). This last adjustment is why we sometimes have to modify breaks before passing CP-nets between functions.
 
-**CP-nets written to/read from file** CP-nets are saved as text files (and similarly read from text files) of the following form. First, the adjacency matrix is given, one line for each row, entries separated by commas. On the next line, the domain vector is given, entries separated by commas. Similarly, on the next line we have the entries vector and then on the next line the breaks vector (in this case we use the breaks vector indexed from 1 due to the fact that CP-nets are initially written and saved from R). This CP-net format is the same as the one used in the CPPDomTestingAndPreprocessing repository.
+**CP-nets written to/read from file** CP-nets are saved as text files (and similarly read from text files) of the following form. First, the adjacency matrix is given, one line for each row, entries separated by commas. On the next line, the domain vector is given, entries separated by commas. Similarly, on the next line we have the entries vector and then on the next line the breaks vector (in this case we use the breaks vector indexed from 1 due to the fact that CP-nets are initially written and saved from R). This CP-net format is the same as the one used in the CPPDomTestingAndPreprocessing repository. An example of this is uploaded in file `CPNExample.csv`.
 
 **Data** The data we discuss here is a history of observed outcome choices. Thus, it is essentially a list of outcomes. This is either input directly as a vector, in which case it is a vector of integers. These integers are the lexicographic enumertations of the observed outcomes. Alternatively, it is given in a csv file. In this case it is the lexicographic enumerations of the outcomes found, listed in one line, separated by commas.
-
-
-
-cyclic update - > thesis
