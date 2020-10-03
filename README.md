@@ -57,14 +57,14 @@ This file contains my CP-net learning function
 ```
 LearningOutput cpnLearn(n, data, beta, DataSize, mcReps, alpha, StartEmpty=true, StartStructure={0}, CpnSeqFilename="/file/path/output.csv")
 ```
--`n` Number of variables
--`data` Observed user choices data (format given below)
--`beta` Vector of Dirichlet prior parameters
--`mcReps` Number of dirichlet samples used in score estimation
--`alpha` Change threshold
--`StartEmpty` Boolean variable, true if and only if we want to learn from the empty structure
--`StartStructure` The specified starting structure if StartEmpty=false (set to {0} otherwise)
--`CpnSeqFilename` The location we want the learning results to be written to
+- `n` Number of variables
+- `data` Observed user choices data (format given below)
+- `beta` Vector of Dirichlet prior parameters
+- `mcReps` Number of dirichlet samples used in score estimation
+- `alpha` Change threshold
+- `StartEmpty` Boolean variable, true if and only if we want to learn from the empty structure
+- `StartStructure` The specified starting structure if StartEmpty=false (set to {0} otherwise)
+- `CpnSeqFilename` The location we want the learning results to be written to
 
 This function takes the observed data and input parameters and applies our learning procedure. The output structure contains a sequence of the CP-nets obtained through learning, a vector of n variable scores, and the learning time elapsed. 
 
@@ -118,8 +118,11 @@ EntailmentAgreement(N_L, DQ1, DQ2)
 Takes the learned CP-net `N_L` and a set of m preferences (o1>o2). `DQ1` is the list of the preferred outcomes (o1) and DQ2 is the list of the not-preferred outcomes (o2) in the same order. These preferences are all entailed by N_T.
 
 The output is three integers, specifying how many of these preferences are 
+
 a)entailed by N_L
+
 b)contradicted by N_L (the opposite preference is entailed)
+
 c)neither entailed nor contradicted by N_L
 
 (Note these 3 options are mutually exclusive)
@@ -149,33 +152,23 @@ This equation is true by the following reasoning. First, O is not in either pare
 This is the fundamental result used in this function to calculate the number of differently oriented edges. However, in some cases the number of misoriented edges can be calculated more simply. e.g. when there is no intersection or P_L=P_T. Thus, we separate into different cases in this function.
 
 ## Format
-Outcomes are each an integer between 0 and 2^n-1. Data is a vector of integers representing the outcomes we have observed being chosen.
 
-The number of an outcome is the lexicographic rank of it viewed as a vector. Binay variables mean that, once a variable order is fixed, every outcome is a 0/1 vector. Then outcome (0,0,0,0) is 0, (0,0,0,1) is 1, (0,0,1,0) is 2, and so on. We assume that the beta values are given in this lexicographic order and so are the draws from the Dirichlet distribution. Note that the value of an outcome (given its vector form/ the variable assignments) can be calculated via SUM o[i]2^(n-i). We use this correspondence a lot throughout to determine which entries of samples we should be considering.
+**Outcomes** Represented in two ways. As our variables are all binary, we can represent an outcome as a 0/1 vector of legth n (the number of variables) if a variable order is fixed. We generally assume a fixed variable order, consistent accross all data, outcomes, structures etc. Outcomes can also be represented as an integer between 0 and 2^(n-1), this is done by enumerating them lexicographically. Outcome (0,0,0,0) is 0, (0,0,0,1) is 1, (0,0,1,0) is 2, and so on. Given a vector outcome, o, we can caluclate its lexicographic enumeration via the following equation (o[i] is the ith entry of vector o)
 
-All structures are given as n*n length vectors. This is essentially the adjacency matrix where rows are given end-to-end instead of on top of one another
+![Lex Calc equation](https://github.com/KathrynLaing/CPNLearning/blob/main/eqn2.png)
 
-A CPT is a 0/1 vector of length 2^|Pa|. Consider the m parents. Each can take value 0 or 1, so parent assignments are lenght m 0/1 vectors (their ordering is enforced by the fixed variable ordering). These vectors are ordered lexicographically. The ith entry of CPT vector is the preference rule under the parent assignment that is ith in the lexicographic order. A 0 entry in the CPT implies the preference rule 1>2 and an entry of 1 implies 2>1 preference (Note that every variable is considered to have domain {1,2} in our code as value labels are irrelevant). This representation is used in our code as well as the entries and breaks representation (which encodes ALL CPTs for the whole CP-net).
+As this mapping is 1-1, we can also use this equation to recover the vector from the enumeration integer. Moving between the two representations is done often in our functions. We can use the same sort of equation to lexicographically enumerate the set of assignments of any set of variables (if their order is fixed). 
+
+Any vector where each entry corresponds to an outcome is assumed to be in order of this enumeration - e.g. the dirichlet prior vector
+
+**Structures** Any structure can be given via an nxn adjacency matrix. We encode these structures as a n\*n length vector. This is simply by listing each row of the agjacency matrix end to end rather than in matrix form. That is (row1, row2, row 3,....)
+
+**CP-nets** We defined a new structure in C++ to handle CP-nets (called cpn, defined in the cpnInput.h file). This is used (except in the case of 35_DominanceTesting.cpp) throughout to handle CP-nets in our functions. This C++ structure is based on the same CP-net encoding we used in the Rcpp code in the CPPDomTestingAndPreprocessing repository. It stores an integer giving the number of variables. The structure (formatted as described above). And three integer vectors, domain, entries, and breaks. Domain gives the size of the domains for each variable. Entries is defined in the same way as in the CPPDomTestingAndPreprocessing repository. As is breaks, however here each entru is 1 less than the Rcpp version (to comply with c++ indexing rather than R indexing). This last adjustment is why we sometimes have to modify breaks before passing CP-nets between functions.
+
+**CP-nets written to/read from file** CP-nets are saved as text files (and similarly read from text files) of the following form. First, the adjacency matrix is given, one line for each row, entries separated by commas. On the next line, the domain vector is given, entries separated by commas. Similarly, on the next line we have the entries vector and then on the next line the breaks vector (in this case we use the breaks vector indexed from 1 due to the fact that CP-nets are initially written and saved from R). This CP-net format is the same as the one used in the CPPDomTestingAndPreprocessing repository.
+
+**Data** The data we discuss here is a history of observed outcome choices. Thus, it is essentially a list of outcomes. This is either input directly as a vector, in which case it is a vector of integers. These integers are the lexicographic enumertations of the observed outcomes. Alternatively, it is given in a csv file. In this case it is the lexicographic enumerations of the outcomes found, listed in one line, separated by commas.
 
 
-In both cases all CP-nets must be written in the files as an adjacency matrix (in nxn form), then the domain sizes vector on the next line, then the CPT entries vector on the next line, then the CPT breaks vector on the next line. All in csv format. This format of a CP-net matches the one we used in .....rcpp repository.
-
-cpnInput.h
-
-This file defines two new data structures in C++. The first is cpn (CP-nets). We are here using the same format for CP-nets as in the ....rcpp repository.... A cpn consists of size (number of variables), structure (the adjacency matrix of the CP-net, now flattened to a vector with rows written one after another), domains (vector of variable domain sizes), cpt Entries, and cptBreaks (the latter two are defined as in ...rcpp repository.. only now the breaks vector starts at 0 instead of 0 to be in line with C++ indexing. That is, take one away from each entry of Rcpp break vectors.
-
-This structure gives us a compact and convenient way to deal with CP-nets in C++ as they have so many separate parts. Throughout, when we talk about using CP-nets or reading/writing CP-nets from C++ we will be using this structure type.
-
-This file is identical to our text files storing CP-nets in the R case. It gives Adjacency matrix, Domain vector, Entries vector, and then Breaks vector, each on new lines. Note that the breaks vector starts at 1, as in the previous case, to match up with R indexing from 1 convenience. However, in C++ the breaks vectors we use start at 0.
-
-The second struct is LearningOutput. This is made in particular as an object to return from our learning algorithm. It has a vector of cpns, which means we can give the CP-nets visited by learning after each edge change (and then the final learned structure). It also has a vector of doubles to give the variable table scores for the learned structure (the product of this vector is the learned CP-net score). Finally, it has a double to give the time elapsed while learning. This struct gives us a single object to return from learning which still allows for convenient access to all of the relevant information about learning performance.
-
-We expect this data to consist of a single comma separated line of D observed outcome choices. Each outcome choice is a single integer that indicates which outcome was chosen. Again we are assuming a lexicographic enumeration of outcomes with a fixed variable order that matches the variable order in the CP-net.
-
- Again we use a lexicographic enumeration of outcomes (and also outcome pairs) in the function, often translating between outcomes and their enumerations.
- 
-CPN structures - encoding in C++
-cpt entries and breaks
-CPT indexit, always 12 or 01?
 
 cyclic update - > thesis
