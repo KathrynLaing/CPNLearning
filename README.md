@@ -14,7 +14,7 @@ The C++ files contain the necessary functions to perform learning and to test th
 
 CompilingInstructions.txt gives the necessary commands to compile these scripts. Note that the gsl library is required.
 
-Below we will outline the functions given by each script and any additional information required to utilise them. We will also discuss the formatting methods for objects such as outcomes, CP-nets, and data. Finally, we will discuss...
+Below we will outline the functions given by each script and any additional information required to utilise them. We will also discuss the formatting methods for objects such as outcomes, CP-nets, and data.
 
 ## Functions
 
