@@ -66,7 +66,7 @@ vector<int> CPTRow(vector<int> A, vector<int> N, vector<int> ENTRIES, vector<int
     }
     return cptRow;
   }
-  /*We have returned the preference row of CPT(X) corresp to given var asst */
+  /*We have returned the preference row of CPT(X) corresp to given parental asst */
 }
 
 
