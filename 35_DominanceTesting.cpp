@@ -449,7 +449,7 @@ List RSDQRankPriority(vector<int> A, vector<int> N, vector<int> ENTRIES, vector<
         lex3-=(o3[i]-1)*LexMult[i];
       }
     }
-    //SuffN is the position of the first element of the matching suffix between o1 and o2 (according to TO ordering)
+    //SuffN is the position of the first element of the matching suffix between o1 and o3 (according to TO ordering)
     //if no matching suffix then SuffN=n
     int SuffN=n;
     for(int i=0;i<n;i++){
